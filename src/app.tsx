@@ -1,6 +1,7 @@
 import React from 'react';
 import uuid from 'uuid/v4';
 import styled from 'styled-components';
+import { ipcRenderer } from 'electron';
 
 interface Expense {
   id: string;
@@ -25,16 +26,16 @@ type Edit = { type: 'Edit', current: Currency, oldVal: any, newVal: any };
 type Undo = { type: 'Undo' };
 type Redo = { type: 'Redo' };
 type SetCurrent = { type: 'SetCurrent', id: string, col: keyof Expense };
+type SetExpenses = { type: 'SetExpenses', expenses: Expense[] };
 
-type Action = AddRow | MoveRow | Edit | Undo | Redo | SetCurrent;
-
-// const actions: Action[] = [];
-
-// function clickAddRowButton() {
-//   actions.push({
-//     type: 'AddRow',
-//   });
-// }
+type Action =
+  AddRow |
+  MoveRow |
+  Edit |
+  Undo |
+  Redo |
+  SetCurrent |
+  SetExpenses;
 
 interface State {
   editing: Currency | null;
@@ -49,6 +50,14 @@ function doAction(state: State, action: Action): State {
       return {
         ...state,
         editing: { id: action.id, col: action.col },
+      };
+    }
+    case 'SetExpenses': {
+      return {
+        editing: null,
+        expenses: action.expenses,
+        actions: [],
+        cursor: 0,
       };
     }
     case 'Undo': {
@@ -199,6 +208,15 @@ export const App: React.FC<{}> = () => {
     expenses: [],
   });
 
+  React.useEffect(() => {
+    console.log('sending backend data');
+    ipcRenderer.send('heres-your-data', state.expenses);
+
+    ipcRenderer.on('opened-data', (event, expenses) => {
+      dispatch({ type: 'SetExpenses', expenses });
+    });
+  }, [state.expenses]);
+
   const addRow = () => dispatch({ type: 'AddRow', id: uuid() });
 
   const undo = () => dispatch({ type: 'Undo' });
@@ -242,55 +260,3 @@ export const App: React.FC<{}> = () => {
     </>
   );
 };
-
-
-// const Td = styled.td`
-//   border: 1px solid red;
-// `;
-
-// const Field: React.FC<{
-//   fieldName: keyof RowData,
-//   row: RowData,
-//   editing: keyof RowData | null,
-//   setEditing: (o: { id: string, field: keyof RowData } | null) => void,
-//   updateRow: (id: string, key: keyof RowData, val: any) => void,
-// }> = ({ editing, setEditing, row, updateRow, fieldName }) => {
-//   return (
-//     editing === fieldName ?
-//       <input defaultValue={row[fieldName]} onKeyDown={(e) => {
-//         if (e.keyCode === 13) {
-//           setEditing(null);
-//           updateRow(row.id, fieldName, (e.target as HTMLInputElement).value);
-//         }
-//       }} /> :
-//       <span onDoubleClick={() => setEditing({ id: row.id, field: fieldName })}>
-//         {row[fieldName]}
-//       </span>
-//   );
-// };
-
-// const Row: React.FC<{ rowData: RowData, updateRow: (id: string, key: keyof RowData, val: any) => void }> = ({ rowData, updateRow }) => {
-//   return (
-//     <tr key={rowData.id}>
-//       <Td><Field row={rowData} fieldName="name" /></Td>
-//       <Td><Field row={rowData} fieldName="amount" /></Td>
-//       <Td><Field row={rowData} fieldName="paidPercent" /></Td>
-//       <Td>{rowData.toPay}</Td>
-//       <Td>{rowData.paidPercent}</Td>
-//       <Td>{rowData.due}</Td>
-//       <Td>{rowData.usuallyDue}</Td>
-//       <Td>{rowData.actuallyDue}</Td>
-//     </tr>
-//   );
-// };
-
-// const AppContext = React.createContext<{
-//   rows: RowData[],
-//   activeCell: null | {
-//     rowId: string,
-//     columnName: keyof RowData,
-//   },
-// }>({
-//   rows: [],
-//   activeCell: null,
-// });
