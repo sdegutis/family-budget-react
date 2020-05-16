@@ -31,7 +31,10 @@ type SetExpenses = { type: 'SetExpenses', expenses: Expense[] };
 type Action =
   AddRow |
   MoveRow |
-  Edit |
+  Edit;
+
+type MetaAction =
+  Action |
   Undo |
   Redo |
   SetCurrent |
@@ -44,7 +47,7 @@ interface State {
   expenses: Expense[];
 }
 
-function doAction(state: State, action: Action): State {
+function doAction(state: State, action: MetaAction): State {
   switch (action.type) {
     case 'SetCurrent': {
       return {
@@ -170,7 +173,7 @@ const Table = styled.table`
 const Field: React.FC<{
   expense: Expense;
   state: State;
-  dispatch: React.Dispatch<Action>;
+  dispatch: React.Dispatch<MetaAction>;
   col: keyof Expense;
 }> = ({ expense, state, col, dispatch }) => {
   const current = state.editing !== null &&
@@ -217,7 +220,7 @@ export const App: React.FC<{}> = () => {
     });
 
     ipcRenderer.on('clean-state', (event, expenses) => {
-      dispatch({ type: 'CleanState', expenses });
+      // dispatch({ type: 'CleanState', expenses });
     });
   }, [state.expenses]);
 
