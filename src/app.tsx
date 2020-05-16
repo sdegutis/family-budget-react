@@ -20,7 +20,7 @@ interface Currency {
   col: keyof Expense;
 }
 
-type AddRow = { type: 'AddRow', id: string };
+type AddRow = { type: 'AddRow', rowId: string };
 type MoveRow = { type: 'MoveRow', from: number, to: number };
 type Edit = { type: 'Edit', current: Currency, oldVal: any, newVal: any };
 type Undo = { type: 'Undo' };
@@ -115,7 +115,7 @@ function doAction(state: State, action: MetaAction): State {
             expenses: [
               ...newState.expenses,
               {
-                id: newAction.id,
+                id: newAction.rowId,
                 name: 'Unnamed bill',
                 amount: 0,
                 payPercent: 1,
@@ -224,7 +224,7 @@ export const App: React.FC<{}> = () => {
     });
   }, [state.expenses]);
 
-  const addRow = () => dispatch({ type: 'AddRow', id: uuid() });
+  const addRow = () => dispatch({ type: 'AddRow', rowId: uuid() });
 
   const undo = () => dispatch({ type: 'Undo' });
   const redo = () => dispatch({ type: 'Redo' });
