@@ -37,7 +37,7 @@ type Action = AddRow | MoveRow | Edit | Undo | Redo | SetCurrent;
 // }
 
 interface State {
-  currency: Currency | null;
+  editing: Currency | null;
   actions: Action[];
   cursor: number;
   expenses: Expense[];
@@ -48,7 +48,7 @@ function doAction(state: State, action: Action): State {
     case 'SetCurrent': {
       return {
         ...state,
-        currency: { id: action.id, col: action.col },
+        editing: { id: action.id, col: action.col },
       };
     }
     case 'Undo': {
@@ -70,6 +70,18 @@ function doAction(state: State, action: Action): State {
           return newState;
         }
         case 'Edit': {
+          newState.expenses = newState.expenses.map(expense => {
+            if (expense.id === newAction.current.id) {
+              return {
+                ...expense,
+                [newAction.current.col]: newAction.oldVal,
+              };
+            }
+            else {
+              return expense;
+            }
+          });
+          newState.editing = null;
           return newState;
         }
       }
@@ -108,6 +120,18 @@ function doAction(state: State, action: Action): State {
           return newState;
         }
         case 'Edit': {
+          newState.expenses = newState.expenses.map(expense => {
+            if (expense.id === newAction.current.id) {
+              return {
+                ...expense,
+                [newAction.current.col]: newAction.newVal,
+              };
+            }
+            else {
+              return expense;
+            }
+          });
+          newState.editing = null;
           return newState;
         }
       }
@@ -140,16 +164,27 @@ const Field: React.FC<{
   dispatch: React.Dispatch<Action>;
   col: keyof Expense;
 }> = ({ expense, state, col, dispatch }) => {
-  const current = state.currency !== null &&
-    state.currency.id === expense.id &&
-    state.currency.col === col;
+  const current = state.editing !== null &&
+    state.editing.id === expense.id &&
+    state.editing.col === col;
 
   if (current) {
-    return <input defaultValue={expense[col]} />;
+    return <input
+      defaultValue={expense[col]}
+      onKeyDown={(e) => {
+        if (e.keyCode === 13) {
+          dispatch({
+            type: 'Edit',
+            current: state.editing,
+            oldVal: expense[col],
+            newVal: (e.target as HTMLInputElement).value,
+          });
+        }
+      }}
+    />;
   }
   else {
     const setCurrent = () => {
-      console.log("something");
       dispatch({ type: 'SetCurrent', id: expense.id, col });
     };
     return <span onDoubleClick={setCurrent}>{expense[col]}</span>
@@ -158,7 +193,7 @@ const Field: React.FC<{
 
 export const App: React.FC<{}> = () => {
   const [state, dispatch] = React.useReducer(doAction, {
-    currency: null,
+    editing: null,
     actions: [],
     cursor: 0,
     expenses: [],
