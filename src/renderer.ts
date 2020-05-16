@@ -31,12 +31,7 @@ import { App } from './app';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-console.log(App);
-
 ReactDOM.render(
   React.createElement(App),
   document.getElementById('root')
 );
-
-console.log('👋 This message is being logged by "renderer.js", included via webpack');
-

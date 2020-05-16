@@ -22,33 +22,167 @@ interface Currency {
 type AddRow = { type: 'AddRow' };
 type MoveRow = { type: 'MoveRow', from: number, to: number };
 type Edit = { type: 'Edit', current: Currency, oldVal: any, newVal: any };
+type Undo = { type: 'Undo' };
+type Redo = { type: 'Redo' };
 
-type Action = AddRow | MoveRow | Edit;
+type Action = AddRow | MoveRow | Edit | Undo | Redo;
 
-const actions: Action[] = [];
+// const actions: Action[] = [];
 
-function clickAddRowButton() {
-  actions.push({
-    type: 'AddRow',
-  });
+// function clickAddRowButton() {
+//   actions.push({
+//     type: 'AddRow',
+//   });
+// }
+
+interface State {
+  currency: Currency | null;
+  actions: Action[];
+  cursor: number;
+  expenses: Expense[];
 }
+
+function doAction(state: State, action: Action): State {
+  switch (action.type) {
+    case 'Undo': {
+      if (state.cursor === 0)
+        return state;
+
+      const newState = { ...state };
+      newState.cursor--;
+      const newAction = newState.actions[newState.cursor];
+
+      switch (newAction.type) {
+        case 'AddRow': {
+          return {
+            ...newState,
+            expenses: newState.expenses.slice(0, -1),
+          };
+        }
+        case 'MoveRow': {
+          return newState;
+        }
+        case 'Edit': {
+          return newState;
+        }
+      }
+
+      return newState;
+    }
+    case 'Redo': {
+      if (state.cursor === state.actions.length)
+        return state;
+
+      const newState = { ...state };
+      const newAction = newState.actions[newState.cursor];
+      newState.cursor++;
+
+      switch (newAction.type) {
+        case 'AddRow': {
+          return {
+            ...newState,
+            expenses: [
+              ...newState.expenses,
+              {
+                id: uuid(),
+                name: 'Unnamed bill',
+                amount: 0,
+                payPercent: 1,
+                toPay: 0,
+                paidPercent: 0,
+                due: 0,
+                usuallyDue: '',
+                actuallyDue: '',
+              }
+            ]
+          };
+        }
+        case 'MoveRow': {
+          return newState;
+        }
+        case 'Edit': {
+          return newState;
+        }
+      }
+
+      return newState;
+    }
+    default: {
+      return doAction(
+        {
+          ...state,
+          actions: [...state.actions, action]
+        },
+        { type: 'Redo' }
+      );
+    }
+  }
+}
+
+const Table = styled.table`
+  border: 1px solid red;
+
+  td {
+    border: 1px solid blue;
+  }
+`;
+
+export const App: React.FC<{}> = () => {
+  const [state, dispatch] = React.useReducer(doAction, {
+    currency: null,
+    actions: [],
+    cursor: 0,
+    expenses: [],
+  });
+
+  const addRow = () => dispatch({ type: 'AddRow' });
+
+  const undo = () => dispatch({ type: 'Undo' });
+  const redo = () => dispatch({ type: 'Redo' });
+
+  return (
+    <>
+      <Table>
+        <thead>
+          <tr>
+            <th>name</th>
+            <th>amount</th>
+            <th>payPercent</th>
+            <th>toPay</th>
+            <th>paidPercent</th>
+            <th>due</th>
+            <th>usuallyDue</th>
+            <th>actuallyDue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {state.expenses.map(expense => {
+            return (
+              <tr key={expense.id}>
+                <td>{expense.name}</td>
+                <td>{expense.amount}</td>
+                <td>{expense.payPercent}</td>
+                <td>{expense.toPay}</td>
+                <td>{expense.paidPercent}</td>
+                <td>{expense.due}</td>
+                <td>{expense.usuallyDue}</td>
+                <td>{expense.actuallyDue}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+      <button onClick={addRow}>Add Row</button>
+      <button onClick={undo}>Undo</button>
+      <button onClick={redo}>Redo</button>
+    </>
+  );
+};
 
 
 // const Td = styled.td`
 //   border: 1px solid red;
 // `;
-
-// interface RowData {
-//   id: string;
-//   name: string;
-//   amount: number;
-//   payPercent: number;
-//   toPay: number;
-//   paidPercent: number;
-//   due: number;
-//   usuallyDue: string;
-//   actuallyDue: string;
-// }
 
 // const Field: React.FC<{
 //   fieldName: keyof RowData,
@@ -96,62 +230,3 @@ function clickAddRowButton() {
 //   rows: [],
 //   activeCell: null,
 // });
-
-export const App: React.FC<{}> = () => {
-  // const [rows, setRows] = React.useState([] as RowData[]);
-  // const [editing, setEditing] = React.useState<{
-  //   id: string,
-  //   field: keyof RowData,
-  // } | null>(null);
-
-  // const addRow = () => {
-  //   setRows(rows => [...rows, {
-  //     id: uuid(),
-  //     name: 'Unnamed bill',
-  //     amount: 0,
-  //     payPercent: 0,
-  //     toPay: 0,
-  //     paidPercent: 0,
-  //     due: 0,
-  //     usuallyDue: '',
-  //     actuallyDue: '',
-  //   }]);
-  // };
-
-  // const updateRow = (val: any) => {
-  //   setRows(rows => rows.map(row => {
-  //     if (row.id === editing.id) {
-  //       return { ...row, [editing.field]: val };
-  //     }
-  //     else {
-  //       return row;
-  //     }
-  //   }));
-  // };
-
-  return (
-    <>
-      {'stuff goes here!'}
-      {/* <table style={{ border: '1px solid red' }}>
-        <thead>
-          <tr>
-            <td>Bill</td>
-            <td>Amount</td>
-            <td>Pay %</td>
-            <td>To Pay</td>
-            <td>Paid %</td>
-            <td>Due</td>
-            <td>Usually Due</td>
-            <td>Actually Due</td>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(row => (
-            <Row rowData={row} key={row.id} />
-          ))}
-        </tbody>
-      </table>
-      <button onClick={addRow}>Add row</button> */}
-    </>
-  );
-};
