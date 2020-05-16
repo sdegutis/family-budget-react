@@ -20,9 +20,9 @@ interface Currency {
   col: keyof Expense;
 }
 
-type AddRow = { type: 'AddRow', rowId: string };
-type MoveRow = { type: 'MoveRow', from: number, to: number };
-type Edit = { type: 'Edit', current: Currency, oldVal: any, newVal: any };
+type AddRow = { id: string, type: 'AddRow', rowId: string };
+type MoveRow = { id: string, type: 'MoveRow', from: number, to: number };
+type Edit = { id: string, type: 'Edit', current: Currency, oldVal: any, newVal: any };
 type Undo = { type: 'Undo' };
 type Redo = { type: 'Redo' };
 type SetCurrent = { type: 'SetCurrent', id: string, col: keyof Expense };
@@ -186,6 +186,7 @@ const Field: React.FC<{
       onKeyDown={(e) => {
         if (e.keyCode === 13) {
           dispatch({
+            id: uuid(),
             type: 'Edit',
             current: state.editing,
             oldVal: expense[col],
@@ -224,7 +225,11 @@ export const App: React.FC<{}> = () => {
     });
   }, [state.expenses]);
 
-  const addRow = () => dispatch({ type: 'AddRow', rowId: uuid() });
+  const addRow = () => dispatch({
+    id: uuid(),
+    type: 'AddRow',
+    rowId: uuid(),
+  });
 
   const undo = () => dispatch({ type: 'Undo' });
   const redo = () => dispatch({ type: 'Redo' });
