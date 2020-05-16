@@ -72,6 +72,8 @@
     "@marshallofsound/webpack-asset-relocator-loader": "^0.5.0",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.7",
+    "@types/styled-components": "^5.1.0",
+    "@types/uuid": "^7.0.3",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",
     "css-loader": "^3.5.3",
@@ -87,6 +89,7 @@
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "styled-components": "^5.1.0"
   }
 }
