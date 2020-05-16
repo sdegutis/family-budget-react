@@ -3,11 +3,14 @@ body {
   margin: auto;
   max-width: 38rem;
   padding: 2rem;
+
+  background: #fff;
+  color: #222;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   html {
     background-color: #000;
     color: #fff;
   }
-}
+} */
