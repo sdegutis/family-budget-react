@@ -27,6 +27,7 @@ type Undo = { type: 'Undo' };
 type Redo = { type: 'Redo' };
 type SetCurrent = { type: 'SetCurrent', id: string, col: keyof Expense };
 type SetExpenses = { type: 'SetExpenses', expenses: Expense[] };
+type CleanState = { type: 'CleanState' };
 
 type Action =
   AddRow |
@@ -38,7 +39,8 @@ type MetaAction =
   Undo |
   Redo |
   SetCurrent |
-  SetExpenses;
+  SetExpenses |
+  CleanState;
 
 interface State {
   editing: Currency | null;
@@ -53,6 +55,11 @@ function doAction(state: State, action: MetaAction): State {
       return {
         ...state,
         editing: { id: action.id, col: action.col },
+      };
+    }
+    case 'CleanState': {
+      return {
+        ...state,
       };
     }
     case 'SetExpenses': {
@@ -220,8 +227,8 @@ export const App: React.FC<{}> = () => {
       dispatch({ type: 'SetExpenses', expenses });
     });
 
-    ipcRenderer.on('clean-state', (event, expenses) => {
-      // dispatch({ type: 'CleanState', expenses });
+    ipcRenderer.on('clean-state', (event) => {
+      dispatch({ type: 'CleanState' });
     });
   }, [state.expenses]);
 
