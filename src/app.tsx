@@ -23,6 +23,7 @@ interface Currency {
 type AddRow = { id: string, type: 'AddRow', rowId: string };
 type MoveRow = { id: string, type: 'MoveRow', from: number, to: number };
 type Edit = { id: string, type: 'Edit', current: Currency, oldVal: any, newVal: any };
+
 type Undo = { type: 'Undo' };
 type Redo = { type: 'Redo' };
 type SetCurrent = { type: 'SetCurrent', id: string, col: keyof Expense };
@@ -47,6 +48,7 @@ interface State {
   actions: Action[];
   cursor: number;
   expenses: Expense[];
+  cleanActionId: string | null;
 }
 
 function doAction(state: State, action: MetaAction): State {
@@ -60,6 +62,9 @@ function doAction(state: State, action: MetaAction): State {
     case 'CleanState': {
       return {
         ...state,
+        cleanActionId: state.actions.length > 0
+          ? state.actions[state.actions.length - 1].id
+          : null,
       };
     }
     case 'SetExpenses': {
@@ -68,6 +73,7 @@ function doAction(state: State, action: MetaAction): State {
         expenses: action.expenses,
         actions: [],
         cursor: 0,
+        cleanActionId: null,
       };
     }
     case 'Undo': {
@@ -217,6 +223,7 @@ export const App: React.FC<{}> = () => {
     actions: [],
     cursor: 0,
     expenses: [],
+    cleanActionId: null,
   });
 
   React.useEffect(() => {
@@ -241,8 +248,15 @@ export const App: React.FC<{}> = () => {
   const undo = () => dispatch({ type: 'Undo' });
   const redo = () => dispatch({ type: 'Redo' });
 
+  console.log('clean', state.cleanActionId);
+
+  const isAtClean = (state.cleanActionId === null)
+    ? state.cursor === 0
+    : state.actions[state.cursor].id === state.cleanActionId;
+
   return (
     <>
+      {isAtClean ? <span>Clean!</span> : <span>Dirty.</span>}
       <Table>
         <thead>
           <tr>
