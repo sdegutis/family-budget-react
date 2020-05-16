@@ -27,11 +27,24 @@ class BudgetWindow {
     this.file = undefined;
   }
 
+  show() {
+    this.browserWindow.show();
+  }
+
   async open() {
     const result = await dialog.showOpenDialog(this.browserWindow, {
       properties: ['openFile'],
     });
     if (result.filePaths.length === 0) return;
+
+    const existing = Object.values(budgets).find(budget => (
+      budget.file === result.filePaths[0]
+    ));
+
+    if (existing) {
+      existing.show();
+      return;
+    }
 
     this.file = result.filePaths[0];
 
