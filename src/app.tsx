@@ -24,8 +24,9 @@ type MoveRow = { type: 'MoveRow', from: number, to: number };
 type Edit = { type: 'Edit', current: Currency, oldVal: any, newVal: any };
 type Undo = { type: 'Undo' };
 type Redo = { type: 'Redo' };
+type SetCurrent = { type: 'SetCurrent', id: string, col: keyof Expense };
 
-type Action = AddRow | MoveRow | Edit | Undo | Redo;
+type Action = AddRow | MoveRow | Edit | Undo | Redo | SetCurrent;
 
 // const actions: Action[] = [];
 
@@ -44,6 +45,12 @@ interface State {
 
 function doAction(state: State, action: Action): State {
   switch (action.type) {
+    case 'SetCurrent': {
+      return {
+        ...state,
+        currency: { id: action.id, col: action.col },
+      };
+    }
     case 'Undo': {
       if (state.cursor === 0)
         return state;
@@ -127,6 +134,28 @@ const Table = styled.table`
   }
 `;
 
+const Field: React.FC<{
+  expense: Expense;
+  state: State;
+  dispatch: React.Dispatch<Action>;
+  col: keyof Expense;
+}> = ({ expense, state, col, dispatch }) => {
+  const current = state.currency !== null &&
+    state.currency.id === expense.id &&
+    state.currency.col === col;
+
+  if (current) {
+    return <input defaultValue={expense[col]} />;
+  }
+  else {
+    const setCurrent = () => {
+      console.log("something");
+      dispatch({ type: 'SetCurrent', id: expense.id, col });
+    };
+    return <span onDoubleClick={setCurrent}>{expense[col]}</span>
+  }
+};
+
 export const App: React.FC<{}> = () => {
   const [state, dispatch] = React.useReducer(doAction, {
     currency: null,
@@ -159,9 +188,9 @@ export const App: React.FC<{}> = () => {
           {state.expenses.map(expense => {
             return (
               <tr key={expense.id}>
-                <td>{expense.name}</td>
-                <td>{expense.amount}</td>
-                <td>{expense.payPercent}</td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} col='name' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} col='amount' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} col='payPercent' /></td>
                 <td>{expense.toPay}</td>
                 <td>{expense.paidPercent}</td>
                 <td>{expense.due}</td>
