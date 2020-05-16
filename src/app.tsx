@@ -215,6 +215,10 @@ export const App: React.FC<{}> = () => {
     ipcRenderer.on('opened-data', (event, expenses) => {
       dispatch({ type: 'SetExpenses', expenses });
     });
+
+    ipcRenderer.on('clean-state', (event, expenses) => {
+      dispatch({ type: 'CleanState', expenses });
+    });
   }, [state.expenses]);
 
   const addRow = () => dispatch({ type: 'AddRow', id: uuid() });

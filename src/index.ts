@@ -25,6 +25,8 @@ class BudgetWindow {
 
   makeNew() {
     this.file = undefined;
+    this.data = undefined;
+    this.browserWindow.webContents.send('opened-data', []);
   }
 
   show() {
@@ -62,6 +64,7 @@ class BudgetWindow {
     }
 
     fs.writeFileSync(this.file, JSON.stringify(this.data));
+    this.browserWindow.webContents.send('clean-state');
   }
 }
 
