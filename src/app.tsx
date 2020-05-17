@@ -62,7 +62,7 @@ function doAction(state: State, action: MetaAction): State {
     case 'CleanState': {
       return {
         ...state,
-        cleanActionId: state.actions.length > 0
+        cleanActionId: state.cursor > 0
           ? state.actions[state.cursor - 1].id
           : null,
       };
