@@ -87,6 +87,10 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  mainWindow.on('close', () => {
+    delete budgets[mainWindow.id];
+  });
 };
 
 // This method will be called when Electron has finished
