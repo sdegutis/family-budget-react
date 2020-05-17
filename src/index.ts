@@ -120,7 +120,7 @@ app.on('activate', () => {
 
 
 
-const isMac = process.platform === 'darwin'
+const isMac = process.platform === 'darwin';
 
 const menu = Menu.buildFromTemplate([
   // { role: 'appMenu' }
