@@ -143,20 +143,30 @@ const menu = Menu.buildFromTemplate([
     label: 'File',
     submenu: [
       {
-        label: 'New', click: async (item, window, event) => {
+        label: 'New',
+        click: async (item, window, event) => {
           budgets[window.id].makeNew();
-        }
+        },
+        accelerator: 'CommandOrControl+N',
       },
-      { label: 'New Window', click: createWindow },
       {
-        label: 'Open', click: async (item, window, event) => {
+        label: 'New Window',
+        click: createWindow,
+        accelerator: 'CommandOrControl+Shift+N',
+      },
+      {
+        label: 'Open',
+        click: async (item, window, event) => {
           budgets[window.id].open();
-        }
+        },
+        accelerator: 'CommandOrControl+O',
       },
       {
-        label: 'Save', click: async (item, window, even) => {
+        label: 'Save',
+        click: async (item, window, even) => {
           budgets[window.id].save();
-        }
+        },
+        accelerator: 'CommandOrControl+S',
       },
       { type: 'separator' },
       isMac ? { role: 'close' } : { role: 'quit' },
