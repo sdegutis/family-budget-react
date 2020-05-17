@@ -251,10 +251,12 @@ export const App: React.FC<{}> = () => {
   const redo = () => dispatch({ type: 'Redo' });
 
   console.log('clean', state.cleanActionId);
+  console.log('cursor', state.cursor);
+  console.log('actions.length', state.actions.length);
 
-  const isAtClean = (state.cleanActionId === null)
-    ? state.cursor === 0
-    : state.actions[state.cursor].id === state.cleanActionId;
+  const isAtClean = (state.cursor === 0
+    ? state.cleanActionId === null
+    : state.actions[state.cursor - 1].id === state.cleanActionId);
 
   return (
     <>
