@@ -63,7 +63,7 @@ function doAction(state: State, action: MetaAction): State {
       return {
         ...state,
         cleanActionId: state.actions.length > 0
-          ? state.actions[state.actions.length - 1].id
+          ? state.actions[state.cursor - 1].id
           : null,
       };
     }
