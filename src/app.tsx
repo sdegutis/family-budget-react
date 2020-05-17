@@ -164,13 +164,10 @@ function doAction(state: State, action: MetaAction): State {
       return newState;
     }
     default: {
-      return doAction(
-        {
-          ...state,
-          actions: [...state.actions, action]
-        },
-        { type: 'Redo' }
-      );
+      const newState = { ...state };
+      newState.actions = newState.actions.slice(0, newState.cursor);
+      newState.actions.push(action);
+      return doAction(newState, { type: 'Redo' });
     }
   }
 }
