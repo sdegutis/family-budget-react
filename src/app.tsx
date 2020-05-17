@@ -229,7 +229,9 @@ export const App: React.FC<{}> = () => {
   React.useEffect(() => {
     console.log('sending backend data');
     ipcRenderer.send('heres-your-data', state.expenses);
+  }, [state.expenses]);
 
+  React.useEffect(() => {
     ipcRenderer.on('opened-data', (event, expenses) => {
       dispatch({ type: 'SetExpenses', expenses });
     });
@@ -237,7 +239,7 @@ export const App: React.FC<{}> = () => {
     ipcRenderer.on('clean-state', (event) => {
       dispatch({ type: 'CleanState' });
     });
-  }, [state.expenses]);
+  }, []);
 
   const addRow = () => dispatch({
     id: uuid(),
