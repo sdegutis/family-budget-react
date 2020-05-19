@@ -33,9 +33,11 @@ class BudgetWindow {
     if (!this.isClean) {
       const result = await dialog.showMessageBox(this.browserWindow, {
         message: 'You have unsaved changes. Are you sure you want to start over?',
-        buttons: ['New', 'Never mind'],
+        buttons: ['Never mind', 'New'],
+        title: 'Family Budget',
+        type: 'warning',
       });
-      if (result.response !== 0) return;
+      if (result.response !== 1) return;
     }
 
     this.file = undefined;
@@ -48,6 +50,16 @@ class BudgetWindow {
   }
 
   async open() {
+    if (!this.isClean) {
+      const result = await dialog.showMessageBox(this.browserWindow, {
+        message: 'You have unsaved changes. Are you sure you want to open a new file?',
+        buttons: ['Never mind', 'Open'],
+        title: 'Family Budget',
+        type: 'warning',
+      });
+      if (result.response !== 1) return;
+    }
+
     const result = await dialog.showOpenDialog(this.browserWindow, {
       properties: ['openFile'],
     });
@@ -80,6 +92,19 @@ class BudgetWindow {
     fs.writeFileSync(this.file, JSON.stringify(this.data));
     this.browserWindow.webContents.send('clean-state');
   }
+
+  confirmQuit() {
+    if (this.isClean)
+      return true;
+
+    const result = dialog.showMessageBoxSync(this.browserWindow, {
+      message: 'You have unsaved changes. Are you sure you want to exit?',
+      buttons: ['Never mind', 'Exit'],
+      title: 'Family Budget',
+      type: 'warning',
+    });
+    return (result === 1);
+  }
 }
 
 const budgets: { [id: string]: BudgetWindow } = {};
@@ -102,7 +127,12 @@ const createWindow = () => {
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 
-  mainWindow.on('close', () => {
+  mainWindow.on('close', (event) => {
+    if (!budgets[mainWindow.id].confirmQuit()) {
+      event.preventDefault();
+      return;
+    }
+
     delete budgets[mainWindow.id];
   });
 };
@@ -159,7 +189,7 @@ const menu = Menu.buildFromTemplate([
       {
         label: 'New',
         click: async (item, window, event) => {
-          budgets[window.id].makeNew();
+          await budgets[window.id].makeNew();
         },
         accelerator: 'CommandOrControl+N',
       },
