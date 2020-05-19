@@ -10,6 +10,7 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 class BudgetWindow {
   file?: string;
   data: any;
+  isClean: boolean;
 
   constructor(private browserWindow: BrowserWindow) {
     browserWindow.webContents.on('ipc-message', (event, channel, ...args) => {
@@ -19,11 +20,24 @@ class BudgetWindow {
           this.data = data;
           break;
         }
+        case 'whether-clean': {
+          const [isClean] = args;
+          this.isClean = isClean;
+          break;
+        }
       }
     });
   }
 
-  makeNew() {
+  async makeNew() {
+    if (!this.isClean) {
+      const result = await dialog.showMessageBox(this.browserWindow, {
+        message: 'You have unsaved changes. Are you sure you want to start over?',
+        buttons: ['New', 'Never mind'],
+      });
+      if (result.response !== 0) return;
+    }
+
     this.file = undefined;
     this.data = undefined;
     this.browserWindow.webContents.send('opened-data', []);

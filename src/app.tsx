@@ -255,6 +255,11 @@ export const App: React.FC<{}> = () => {
     ? state.cleanActionId === null
     : state.actions[state.cursor - 1].id === state.cleanActionId);
 
+  React.useEffect(() => {
+    console.log('sending backend cleanness');
+    ipcRenderer.send('whether-clean', isAtClean);
+  }, [isAtClean]);
+
   return (
     <>
       {isAtClean ? <span>Clean!</span> : <span>Dirty.</span>}
