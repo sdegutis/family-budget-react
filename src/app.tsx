@@ -3,6 +3,15 @@ import uuid from 'uuid/v4';
 import styled from 'styled-components';
 import { ipcRenderer } from 'electron';
 
+interface ExpenseInput {
+  id: string;
+  name: string;
+  amount: number;
+  payPercent: number;
+  paidPercent: number;
+  usuallyDue: string;
+}
+
 interface Expense {
   id: string;
   name: string;
@@ -13,6 +22,18 @@ interface Expense {
   due: number;
   usuallyDue: string;
   actuallyDue: string;
+}
+
+function calculateExpense(expenseInput: ExpenseInput): Expense {
+  const toPay = expenseInput.amount * expenseInput.payPercent;
+  return {
+    ...expenseInput,
+    toPay,
+    due: toPay - (toPay * expenseInput.paidPercent),
+    actuallyDue: (expenseInput.paidPercent === 1
+      ? '-'
+      : expenseInput.usuallyDue),
+  };
 }
 
 interface Currency {
@@ -127,17 +148,14 @@ function doAction(state: State, action: MetaAction): State {
             ...newState,
             expenses: [
               ...newState.expenses,
-              {
+              calculateExpense({
                 id: newAction.rowId,
                 name: 'Unnamed bill',
                 amount: 0,
                 payPercent: 1,
-                toPay: 0,
                 paidPercent: 0,
-                due: 0,
                 usuallyDue: '',
-                actuallyDue: '',
-              }
+              }),
             ]
           };
         }
@@ -147,10 +165,10 @@ function doAction(state: State, action: MetaAction): State {
         case 'Edit': {
           newState.expenses = newState.expenses.map(expense => {
             if (expense.id === newAction.current.id) {
-              return {
+              return calculateExpense({
                 ...expense,
                 [newAction.current.col]: newAction.newVal,
-              };
+              });
             }
             else {
               return expense;
