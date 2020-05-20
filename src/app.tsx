@@ -3,6 +3,25 @@ import uuid from 'uuid/v4';
 import styled from 'styled-components';
 import { ipcRenderer } from 'electron';
 
+const Table = styled.table`
+  /* border: 1px solid red;
+
+  td {
+    border: 1px solid blue;
+  } */
+`;
+
+const FieldInput = styled.input`
+  width: 6em;
+  font: inherit;
+  outline: none;
+  border: none;
+`;
+
+const FieldSpan = styled.div`
+  width: 6em;
+`;
+
 interface ExpenseInput {
   id: string;
   name: string;
@@ -198,14 +217,6 @@ function doAction(state: State, action: MetaAction): State {
   }
 }
 
-const Table = styled.table`
-  border: 1px solid red;
-
-  td {
-    border: 1px solid blue;
-  }
-`;
-
 const Field: React.FC<{
   kind: 'string' | 'money' | 'percent',
   expense: Expense;
@@ -237,7 +248,7 @@ const Field: React.FC<{
   };
 
   if (currentlyEditing) {
-    return <input
+    return <FieldInput
       ref={inputRef}
       onBlur={cancelEdit}
       defaultValue={stringValue}
@@ -269,9 +280,9 @@ const Field: React.FC<{
     const setCurrent = () => {
       dispatch({ type: 'SetCurrent', id: expense.id, col });
     };
-    return <span onDoubleClick={setCurrent}>
+    return <FieldSpan onDoubleClick={setCurrent}>
       {stringValue}
-    </span>
+    </FieldSpan>
   }
 };
 
