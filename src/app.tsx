@@ -221,12 +221,14 @@ function doAction(state: State, action: MetaAction): State {
 
 const Field: React.FC<{
   kind: 'string' | 'money' | 'percent',
+  editable: boolean;
   expense: Expense;
   state: State;
   dispatch: React.Dispatch<MetaAction>;
   col: keyof Expense;
-}> = ({ expense, state, col, kind, dispatch }) => {
-  const currentlyEditing = state.editing !== null &&
+}> = ({ editable, expense, state, col, kind, dispatch }) => {
+  const currentlyEditing = editable &&
+    state.editing !== null &&
     state.editing.id === expense.id &&
     state.editing.col === col;
 
@@ -358,14 +360,14 @@ export const App: React.FC<{}> = () => {
           {state.expenses.map(expense => {
             return (
               <tr key={expense.id}>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='string' col='name' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='money' col='amount' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='percent' col='payPercent' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='money' col='toPay' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='percent' col='paidPercent' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='money' col='due' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='string' col='usuallyDue' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} kind='string' col='actuallyDue' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='string' col='name' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='money' col='amount' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='percent' col='payPercent' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='money' col='toPay' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='percent' col='paidPercent' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='money' col='due' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='string' col='usuallyDue' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='string' col='actuallyDue' /></td>
               </tr>
             );
           })}
