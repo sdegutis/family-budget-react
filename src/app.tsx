@@ -199,26 +199,44 @@ const Table = styled.table`
 `;
 
 const Field: React.FC<{
+  kind: 'string' | 'money' | 'percent',
   expense: Expense;
   state: State;
   dispatch: React.Dispatch<MetaAction>;
   col: keyof Expense;
-}> = ({ expense, state, col, dispatch }) => {
+}> = ({ expense, state, col, kind, dispatch }) => {
   const current = state.editing !== null &&
     state.editing.id === expense.id &&
     state.editing.col === col;
 
+  const stringValue = kind === 'string'
+    ? expense[col]
+    : kind === 'money'
+      ? `$${expense[col]}`
+      : `${(expense[col] as number) * 100}%`;
+
   if (current) {
     return <input
-      defaultValue={expense[col]}
+      defaultValue={stringValue}
       onKeyDown={(e) => {
         if (e.keyCode === 13) {
+          let newVal: any = (e.target as HTMLInputElement).value;
+
+          switch (kind) {
+            case 'percent':
+              newVal = parseFloat(newVal.replace(/%$/g, '')) / 100;
+              break;
+            case 'money':
+              newVal = parseFloat(newVal.replace(/^\$/g, ''));
+              break;
+          }
+
           dispatch({
             id: uuid(),
             type: 'Edit',
             current: state.editing,
             oldVal: expense[col],
-            newVal: (e.target as HTMLInputElement).value,
+            newVal,
           });
         }
       }}
@@ -228,7 +246,9 @@ const Field: React.FC<{
     const setCurrent = () => {
       dispatch({ type: 'SetCurrent', id: expense.id, col });
     };
-    return <span onDoubleClick={setCurrent}>{expense[col]}</span>
+    return <span onDoubleClick={setCurrent}>
+      {stringValue}
+    </span>
   }
 };
 
@@ -280,7 +300,6 @@ export const App: React.FC<{}> = () => {
 
   return (
     <>
-      {isAtClean ? <span>Clean!</span> : <span>Dirty.</span>}
       <Table>
         <thead>
           <tr>
@@ -298,14 +317,14 @@ export const App: React.FC<{}> = () => {
           {state.expenses.map(expense => {
             return (
               <tr key={expense.id}>
-                <td><Field expense={expense} state={state} dispatch={dispatch} col='name' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} col='amount' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} col='payPercent' /></td>
-                <td>{expense.toPay}</td>
-                <td>{expense.paidPercent}</td>
-                <td>{expense.due}</td>
-                <td>{expense.usuallyDue}</td>
-                <td>{expense.actuallyDue}</td>
+                <td><Field kind='string' expense={expense} state={state} dispatch={dispatch} col='name' /></td>
+                <td><Field kind='money' expense={expense} state={state} dispatch={dispatch} col='amount' /></td>
+                <td><Field kind='percent' expense={expense} state={state} dispatch={dispatch} col='payPercent' /></td>
+                <td><Field kind='money' expense={expense} state={state} dispatch={dispatch} col='toPay' /></td>
+                <td><Field kind='percent' expense={expense} state={state} dispatch={dispatch} col='paidPercent' /></td>
+                <td><Field kind='money' expense={expense} state={state} dispatch={dispatch} col='due' /></td>
+                <td><Field kind='string' expense={expense} state={state} dispatch={dispatch} col='usuallyDue' /></td>
+                <td><Field kind='string' expense={expense} state={state} dispatch={dispatch} col='actuallyDue' /></td>
               </tr>
             );
           })}
