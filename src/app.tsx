@@ -12,14 +12,14 @@ const Table = styled.table`
 `;
 
 const FieldInput = styled.input`
-  width: 6em;
+  min-width: 6em;
   font: inherit;
   outline: none;
   border: none;
 `;
 
 const FieldSpan = styled.div`
-  width: 6em;
+  min-width: 6em;
 `;
 
 interface ExpenseInput {
@@ -337,14 +337,14 @@ export const App: React.FC<{}> = () => {
       <Table>
         <thead>
           <tr>
-            <th>name</th>
-            <th>amount</th>
-            <th>payPercent</th>
-            <th>toPay</th>
-            <th>paidPercent</th>
-            <th>due</th>
-            <th>usuallyDue</th>
-            <th>actuallyDue</th>
+            <th>Name</th>
+            <th>Amount</th>
+            <th>Pay Percent</th>
+            <th>To Pay</th>
+            <th>Paid Percent</th>
+            <th>Due</th>
+            <th>Usually Due</th>
+            <th>Actually Due</th>
           </tr>
         </thead>
         <tbody>
