@@ -20,6 +20,8 @@ const FieldInput = styled.input`
 
 const FieldSpan = styled.div`
   min-width: 6em;
+
+  border: 1px solid red;
 `;
 
 interface ExpenseInput {
@@ -280,7 +282,12 @@ const Field: React.FC<{
     const setCurrent = () => {
       dispatch({ type: 'SetCurrent', id: expense.id, col });
     };
-    return <FieldSpan onDoubleClick={setCurrent}>
+    return <FieldSpan
+      onDoubleClick={setCurrent}
+    >
+      {stringValue === '' &&
+        <span dangerouslySetInnerHTML={{ __html: '&nbsp;' }} />
+      }
       {stringValue}
     </FieldSpan>
   }
@@ -351,14 +358,14 @@ export const App: React.FC<{}> = () => {
           {state.expenses.map(expense => {
             return (
               <tr key={expense.id}>
-                <td><Field kind='string' expense={expense} state={state} dispatch={dispatch} col='name' /></td>
-                <td><Field kind='money' expense={expense} state={state} dispatch={dispatch} col='amount' /></td>
-                <td><Field kind='percent' expense={expense} state={state} dispatch={dispatch} col='payPercent' /></td>
-                <td><Field kind='money' expense={expense} state={state} dispatch={dispatch} col='toPay' /></td>
-                <td><Field kind='percent' expense={expense} state={state} dispatch={dispatch} col='paidPercent' /></td>
-                <td><Field kind='money' expense={expense} state={state} dispatch={dispatch} col='due' /></td>
-                <td><Field kind='string' expense={expense} state={state} dispatch={dispatch} col='usuallyDue' /></td>
-                <td><Field kind='string' expense={expense} state={state} dispatch={dispatch} col='actuallyDue' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='string' col='name' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='money' col='amount' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='percent' col='payPercent' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='money' col='toPay' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='percent' col='paidPercent' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='money' col='due' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='string' col='usuallyDue' /></td>
+                <td><Field expense={expense} state={state} dispatch={dispatch} kind='string' col='actuallyDue' /></td>
               </tr>
             );
           })}
