@@ -205,18 +205,28 @@ const Field: React.FC<{
   dispatch: React.Dispatch<MetaAction>;
   col: keyof Expense;
 }> = ({ expense, state, col, kind, dispatch }) => {
-  const current = state.editing !== null &&
+  const currentlyEditing = state.editing !== null &&
     state.editing.id === expense.id &&
     state.editing.col === col;
+
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   const stringValue = kind === 'string'
     ? expense[col]
     : kind === 'money'
-      ? `$${expense[col]}`
+      ? `$${Math.round(expense[col] as number * 100) / 100}`
       : `${(expense[col] as number) * 100}%`;
 
-  if (current) {
+  React.useEffect(() => {
+    if (currentlyEditing) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [currentlyEditing]);
+
+  if (currentlyEditing) {
     return <input
+      ref={inputRef}
       defaultValue={stringValue}
       onKeyDown={(e) => {
         if (e.keyCode === 13) {
