@@ -50,6 +50,7 @@ type Redo = { type: 'Redo' };
 type SetCurrent = { type: 'SetCurrent', id: string, col: keyof Expense };
 type SetExpenses = { type: 'SetExpenses', expenses: Expense[] };
 type CleanState = { type: 'CleanState' };
+type CancelEdit = { type: 'CancelEdit' };
 
 type Action =
   AddRow |
@@ -62,6 +63,7 @@ type MetaAction =
   Redo |
   SetCurrent |
   SetExpenses |
+  CancelEdit |
   CleanState;
 
 interface State {
@@ -78,6 +80,12 @@ function doAction(state: State, action: MetaAction): State {
       return {
         ...state,
         editing: { id: action.id, col: action.col },
+      };
+    }
+    case 'CancelEdit': {
+      return {
+        ...state,
+        editing: null,
       };
     }
     case 'CleanState': {
@@ -224,9 +232,14 @@ const Field: React.FC<{
     }
   }, [currentlyEditing]);
 
+  const cancelEdit = () => {
+    dispatch({ type: 'CancelEdit' });
+  };
+
   if (currentlyEditing) {
     return <input
       ref={inputRef}
+      onBlur={cancelEdit}
       defaultValue={stringValue}
       onKeyDown={(e) => {
         if (e.keyCode === 13) {
