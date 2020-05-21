@@ -42,7 +42,7 @@ class BudgetWindow {
 
     this.file = undefined;
     this.data = undefined;
-    this.browserWindow.webContents.send('opened-data', []);
+    this.browserWindow.webContents.send('made-new');
   }
 
   show() {

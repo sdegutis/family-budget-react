@@ -349,13 +349,22 @@ const FinalRows: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
 };
 
 export const App: React.FC<{}> = () => {
-  const [state, dispatch] = React.useReducer(doAction, {
+  const [state, dispatch] = React.useReducer(doAction, {}, () => ({
     editing: null,
     actions: [],
     cursor: 0,
-    expenses: [],
+    expenses: [
+      calculateExpense({
+        id: uuid(),
+        name: 'First bill',
+        amount: 0,
+        payPercent: 1,
+        paidPercent: 0,
+        usuallyDue: '',
+      }),
+    ],
     cleanActionId: null,
-  });
+  }));
 
   React.useEffect(() => {
     console.log('sending backend data');
@@ -365,6 +374,21 @@ export const App: React.FC<{}> = () => {
   React.useEffect(() => {
     ipcRenderer.on('opened-data', (event, expenses) => {
       dispatch({ type: 'SetExpenses', expenses });
+    });
+
+    ipcRenderer.on('made-new', (event) => {
+      dispatch({
+        type: 'SetExpenses', expenses: [
+          calculateExpense({
+            id: uuid(),
+            name: 'First bill',
+            amount: 0,
+            payPercent: 1,
+            paidPercent: 0,
+            usuallyDue: '',
+          }),
+        ]
+      });
     });
 
     ipcRenderer.on('clean-state', (event) => {
