@@ -295,6 +295,59 @@ const Field: React.FC<{
   }
 };
 
+function formatAsDollar(n: number) {
+  return '$' + (Math.round(n * 100) / 100);
+}
+
+const FinalRows: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
+  const totalAmount = expenses.reduce((a, b) => a + b.amount, 0);
+  const totalToPay = expenses.reduce((a, b) => a + b.toPay, 0);
+  const totalDue = expenses.reduce((a, b) => a + b.due, 0);
+
+  const balanceAmount = 4200;
+  const balanceToPay = 4200;
+  const balanceDue = 4200;
+
+  const remainderAmount = balanceAmount - totalAmount;
+  const remainderToPay = balanceToPay - totalToPay;
+  const remainderDue = balanceDue - totalDue;
+
+  return (
+    <>
+      <tr>
+        <th>Total</th>
+        <td>{formatAsDollar(totalAmount)}</td>
+        <td></td>
+        <td>{formatAsDollar(totalToPay)}</td>
+        <td></td>
+        <td>{formatAsDollar(totalDue)}</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th>Balance</th>
+        <td>{formatAsDollar(balanceAmount)}</td>
+        <td></td>
+        <td>{formatAsDollar(balanceToPay)}</td>
+        <td></td>
+        <td>{formatAsDollar(balanceDue)}</td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th>Remainder</th>
+        <td>{formatAsDollar(remainderAmount)}</td>
+        <td></td>
+        <td>{formatAsDollar(remainderToPay)}</td>
+        <td></td>
+        <td>{formatAsDollar(remainderDue)}</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </>
+  );
+};
+
 export const App: React.FC<{}> = () => {
   const [state, dispatch] = React.useReducer(doAction, {
     editing: null,
@@ -371,6 +424,7 @@ export const App: React.FC<{}> = () => {
               </tr>
             );
           })}
+          <FinalRows expenses={state.expenses} />
         </tbody>
       </Table>
       <button onClick={addRow}>Add Row</button>
