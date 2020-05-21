@@ -66,7 +66,7 @@ interface Currency {
 type AddRow = { id: string, type: 'AddRow', rowId: string };
 type AddSpace = { id: string, type: 'AddSpace', rowId: string };
 type MoveRow = { id: string, type: 'MoveRow', from: number, to: number };
-type Edit = { id: string, type: 'Edit', current: Currency, oldVal: any, newVal: any };
+type Edit = { id: string, type: 'Edit', current: Currency, oldVal: any, newVal: any, tab: boolean };
 
 type Undo = { type: 'Undo' };
 type Redo = { type: 'Redo' };
@@ -243,6 +243,24 @@ function doAction(state: State, action: MetaAction): State {
           return newState;
         }
         case 'Edit': {
+          if (newAction.tab === true) {
+            type EditableField = Exclude<keyof ExpenseInput, 'id' | 'space'>;
+            type ColMapping = {
+              [P in EditableField]: EditableField
+            };
+            const colMapping: ColMapping = {
+              name: "amount",
+              amount: "payPercent",
+              payPercent: "paidPercent",
+              paidPercent: "usuallyDue",
+              usuallyDue: "name",
+            };
+            const newCurrency = { ...newAction.current };
+            newCurrency.col = colMapping[newCurrency.col as EditableField];
+            newState.editing = newCurrency;
+          } else {
+            newState.editing = null;
+          }
           newState.expenses = newState.expenses.map(expense => {
             if (expense.id === newAction.current.id) {
               return calculateExpense({
@@ -254,7 +272,6 @@ function doAction(state: State, action: MetaAction): State {
               return expense;
             }
           });
-          newState.editing = null;
           return newState;
         }
       }
@@ -312,7 +329,8 @@ const Field: React.FC<{
       onBlur={cancelEdit}
       defaultValue={stringValue.toString()}
       onKeyDown={(e) => {
-        if (e.keyCode === 13) {
+        if (e.keyCode === 13 || e.keyCode === 9) {
+          e.preventDefault();
           let newVal: any = (e.target as HTMLInputElement).value;
 
           switch (kind) {
@@ -324,12 +342,15 @@ const Field: React.FC<{
               break;
           }
 
+          const isTab = (e.keyCode === 9)
+
           dispatch({
             id: uuid(),
             type: 'Edit',
             current: state.editing,
             oldVal: expense[col],
             newVal,
+            tab: isTab,
           });
         }
       }}
