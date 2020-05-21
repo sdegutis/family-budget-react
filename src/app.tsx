@@ -68,9 +68,10 @@ type Edit = { id: string, type: 'Edit', current: Currency, oldVal: any, newVal: 
 type Undo = { type: 'Undo' };
 type Redo = { type: 'Redo' };
 type SetCurrent = { type: 'SetCurrent', id: string, col: keyof Expense };
-type SetExpenses = { type: 'SetExpenses', expenses: Expense[] };
+type SetExpenses = { type: 'SetExpenses', expenses: Expense[], balances: Balances };
 type CleanState = { type: 'CleanState' };
 type CancelEdit = { type: 'CancelEdit' };
+type SetBalances = { type: 'SetBalances', balances: Balances };
 
 type Action =
   AddRow |
@@ -84,13 +85,21 @@ type MetaAction =
   SetCurrent |
   SetExpenses |
   CancelEdit |
+  SetBalances |
   CleanState;
+
+interface Balances {
+  amount: number,
+  toPay: number,
+  due: number,
+}
 
 interface State {
   editing: Currency | null;
   actions: Action[];
   cursor: number;
   expenses: Expense[];
+  balances: Balances,
   cleanActionId: string | null;
 }
 
@@ -121,6 +130,17 @@ function doAction(state: State, action: MetaAction): State {
         editing: null,
         expenses: action.expenses,
         actions: [],
+        balances: action.balances,
+        cursor: 0,
+        cleanActionId: null,
+      };
+    }
+    case 'SetBalances': {
+      return {
+        editing: null,
+        expenses: state.expenses,
+        actions: [],
+        balances: action.balances,
         cursor: 0,
         cleanActionId: null,
       };
@@ -298,18 +318,54 @@ function formatAsDollar(n: number) {
   return '$' + (Math.round(n * 100) / 100);
 }
 
-const FinalRows: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
+const BalanceField: React.FC<{
+  balances: Balances,
+  setBalances: (b: Balances) => void,
+  col: keyof Balances,
+}> = ({ balances, setBalances, col }) => {
+  const [editing, setEditing] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+
+  React.useEffect(() => {
+    if (editing) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  return (
+    editing
+      ? <input
+        ref={inputRef}
+        defaultValue={formatAsDollar(balances[col])}
+        onKeyDown={(e) => {
+          if (e.keyCode === 13) {
+            setEditing(false);
+            setBalances({
+              ...balances,
+              [col]: parseFloat((e.target as HTMLInputElement).value.replace(/^\$/g, '')),
+            });
+          }
+        }}
+      />
+      : <span onDoubleClick={() => setEditing(true)}>
+        {formatAsDollar(balances[col])}
+      </span>
+  );
+};
+
+const FinalRows: React.FC<{
+  expenses: Expense[],
+  balances: Balances,
+  setBalances: (b: Balances) => void,
+}> = ({ expenses, balances, setBalances }) => {
   const totalAmount = expenses.reduce((a, b) => a + b.amount, 0);
   const totalToPay = expenses.reduce((a, b) => a + b.toPay, 0);
   const totalDue = expenses.reduce((a, b) => a + b.due, 0);
 
-  const balanceAmount = 4200;
-  const balanceToPay = 4200;
-  const balanceDue = 4200;
-
-  const remainderAmount = balanceAmount - totalAmount;
-  const remainderToPay = balanceToPay - totalToPay;
-  const remainderDue = balanceDue - totalDue;
+  const remainderAmount = balances.amount - totalAmount;
+  const remainderToPay = balances.toPay - totalToPay;
+  const remainderDue = balances.due - totalDue;
 
   return (
     <>
@@ -325,11 +381,11 @@ const FinalRows: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
       </tr>
       <tr>
         <th>Balance</th>
-        <td>{formatAsDollar(balanceAmount)}</td>
+        <td><BalanceField balances={balances} setBalances={setBalances} col='amount' /></td>
         <td></td>
-        <td>{formatAsDollar(balanceToPay)}</td>
+        <td><BalanceField balances={balances} setBalances={setBalances} col='toPay' /></td>
         <td></td>
-        <td>{formatAsDollar(balanceDue)}</td>
+        <td><BalanceField balances={balances} setBalances={setBalances} col='due' /></td>
         <td></td>
         <td></td>
       </tr>
@@ -352,6 +408,11 @@ export const App: React.FC<{}> = () => {
     editing: null,
     actions: [],
     cursor: 0,
+    balances: {
+      amount: 0,
+      toPay: 0,
+      due: 0,
+    },
     expenses: [
       calculateExpense({
         id: uuid(),
@@ -367,17 +428,25 @@ export const App: React.FC<{}> = () => {
 
   React.useEffect(() => {
     console.log('sending backend data');
-    ipcRenderer.send('heres-your-data', state.expenses);
+    ipcRenderer.send('heres-your-data', {
+      expenses: state.expenses,
+      balances: state.balances,
+    });
   }, [state.expenses]);
 
   React.useEffect(() => {
-    ipcRenderer.on('opened-data', (event, expenses) => {
-      dispatch({ type: 'SetExpenses', expenses });
+    ipcRenderer.on('opened-data', (event, data) => {
+      dispatch({
+        type: 'SetExpenses',
+        expenses: data.expenses,
+        balances: data.balances,
+      });
     });
 
     ipcRenderer.on('made-new', (event) => {
       dispatch({
-        type: 'SetExpenses', expenses: [
+        type: 'SetExpenses',
+        expenses: [
           calculateExpense({
             id: uuid(),
             name: 'First bill',
@@ -386,7 +455,12 @@ export const App: React.FC<{}> = () => {
             paidPercent: 0,
             usuallyDue: '',
           }),
-        ]
+        ],
+        balances: {
+          amount: 0,
+          toPay: 0,
+          due: 0,
+        },
       });
     });
 
@@ -447,7 +521,11 @@ export const App: React.FC<{}> = () => {
               </tr>
             );
           })}
-          <FinalRows expenses={state.expenses} />
+          <FinalRows
+            expenses={state.expenses}
+            balances={state.balances}
+            setBalances={(balances) => dispatch({ type: 'SetBalances', balances })}
+          />
         </tbody>
       </Table>
       <button onClick={addRow}>Add Row</button>
