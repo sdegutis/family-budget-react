@@ -4,24 +4,23 @@ import styled from 'styled-components';
 import { ipcRenderer } from 'electron';
 
 const Table = styled.table`
-  /* border: 1px solid red;
-
-  td {
-    border: 1px solid blue;
-  } */
+  /* border: 1px solid red; */
 `;
 
 const FieldInput = styled.input`
   min-width: 6em;
   font: inherit;
   outline: none;
-  border: none;
+  border: 1px solid #aaa;
+  &:focus {
+    border-color: blue;
+  }
 `;
 
 const FieldSpan = styled.div`
   min-width: 6em;
   white-space: nowrap;
-  border: 1px solid red;
+  border: 1px solid #aaa;
 `;
 
 interface ExpenseInput {
