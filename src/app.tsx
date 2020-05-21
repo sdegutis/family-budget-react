@@ -30,6 +30,7 @@ interface ExpenseInput {
   payPercent: number;
   paidPercent: number;
   usuallyDue: string;
+  space: boolean,
 }
 
 interface Expense {
@@ -42,6 +43,7 @@ interface Expense {
   due: number;
   usuallyDue: string;
   actuallyDue: string;
+  space: boolean,
 }
 
 function calculateExpense(expenseInput: ExpenseInput): Expense {
@@ -62,6 +64,7 @@ interface Currency {
 }
 
 type AddRow = { id: string, type: 'AddRow', rowId: string };
+type AddSpace = { id: string, type: 'AddSpace', rowId: string };
 type MoveRow = { id: string, type: 'MoveRow', from: number, to: number };
 type Edit = { id: string, type: 'Edit', current: Currency, oldVal: any, newVal: any };
 
@@ -75,6 +78,7 @@ type SetBalances = { type: 'SetBalances', balances: Balances };
 
 type Action =
   AddRow |
+  AddSpace |
   MoveRow |
   Edit;
 
@@ -160,6 +164,12 @@ function doAction(state: State, action: MetaAction): State {
             expenses: newState.expenses.slice(0, -1),
           };
         }
+        case 'AddSpace': {
+          return {
+            ...newState,
+            expenses: newState.expenses.slice(0, -1),
+          };
+        }
         case 'MoveRow': {
           return newState;
         }
@@ -203,6 +213,24 @@ function doAction(state: State, action: MetaAction): State {
                 payPercent: 1,
                 paidPercent: 0,
                 usuallyDue: '',
+                space: false,
+              }),
+            ]
+          };
+        }
+        case 'AddSpace': {
+          return {
+            ...newState,
+            expenses: [
+              ...newState.expenses,
+              calculateExpense({
+                id: newAction.rowId,
+                name: '',
+                amount: 0,
+                payPercent: 1,
+                paidPercent: 0,
+                usuallyDue: '',
+                space: true,
               }),
             ]
           };
@@ -246,6 +274,10 @@ const Field: React.FC<{
   dispatch: React.Dispatch<MetaAction>;
   col: keyof Expense;
 }> = ({ editable, expense, state, col, kind, dispatch }) => {
+  if (expense.space) {
+    return <div style={{ height: '20px' }} />;
+  }
+
   const currentlyEditing = editable &&
     state.editing !== null &&
     state.editing.id === expense.id &&
@@ -274,7 +306,7 @@ const Field: React.FC<{
     return <FieldInput
       ref={inputRef}
       onBlur={cancelEdit}
-      defaultValue={stringValue}
+      defaultValue={stringValue.toString()}
       onKeyDown={(e) => {
         if (e.keyCode === 13) {
           let newVal: any = (e.target as HTMLInputElement).value;
@@ -421,6 +453,7 @@ export const App: React.FC<{}> = () => {
         payPercent: 1,
         paidPercent: 0,
         usuallyDue: '',
+        space: false,
       }),
     ],
     cleanActionId: null,
@@ -455,6 +488,7 @@ export const App: React.FC<{}> = () => {
             payPercent: 1,
             paidPercent: 0,
             usuallyDue: '',
+            space: false,
           }),
         ],
         balances: {
@@ -473,6 +507,12 @@ export const App: React.FC<{}> = () => {
   const addRow = () => dispatch({
     id: uuid(),
     type: 'AddRow',
+    rowId: uuid(),
+  });
+
+  const addSpace = () => dispatch({
+    id: uuid(),
+    type: 'AddSpace',
     rowId: uuid(),
   });
 
@@ -530,6 +570,7 @@ export const App: React.FC<{}> = () => {
         </tbody>
       </Table>
       <button onClick={addRow}>Add Row</button>
+      <button onClick={addSpace}>Add Space</button>
       <button onClick={undo}>Undo</button>
       <button onClick={redo}>Redo</button>
     </>
