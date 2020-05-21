@@ -63,13 +63,17 @@ class BudgetWindow {
     const result = await dialog.showOpenDialog(this.browserWindow, {
       properties: ['openFile'],
     });
-    if (result.filePaths.length === 0) return;
+    if (result.filePaths.length === 0) {
+      console.log('not opening any files');
+      return;
+    }
 
     const existing = Object.values(budgets).find(budget => (
       budget.file === result.filePaths[0]
     ));
 
     if (existing) {
+      console.log('showing existing window');
       existing.show();
       return;
     }
@@ -78,6 +82,7 @@ class BudgetWindow {
 
     const json = fs.readFileSync(this.file, 'utf-8');
     this.data = JSON.parse(json);
+    console.log('stored data from file:', this.data);
 
     this.browserWindow.webContents.send('opened-data', this.data);
   }

@@ -436,6 +436,7 @@ export const App: React.FC<{}> = () => {
 
   React.useEffect(() => {
     ipcRenderer.on('opened-data', (event, data) => {
+      console.log('data:', data);
       dispatch({
         type: 'SetExpenses',
         expenses: data.expenses,
