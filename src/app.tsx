@@ -20,7 +20,7 @@ const FieldInput = styled.input`
 
 const FieldSpan = styled.div`
   min-width: 6em;
-
+  white-space: nowrap;
   border: 1px solid red;
 `;
 
