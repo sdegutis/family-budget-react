@@ -204,6 +204,10 @@ function doAction(state: State, action: MetaAction): State {
         case 'AddRow': {
           return {
             ...newState,
+            editing: {
+              col: "name",
+              id: newAction.rowId,
+            },
             expenses: [
               ...newState.expenses,
               calculateExpense({
