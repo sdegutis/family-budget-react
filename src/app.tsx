@@ -5,22 +5,26 @@ import { ipcRenderer } from 'electron';
 
 const Table = styled.table`
   /* border: 1px solid red; */
+  border-collapse: collapse;
+  td {
+    border: 1px solid #aaa;
+  }
 `;
 
 const FieldInput = styled.input`
   min-width: 6em;
   font: inherit;
   outline: none;
-  border: 1px solid #aaa;
-  &:focus {
+  /* border: 1px solid #aaa; */
+  /* &:focus {
     border-color: blue;
-  }
+  } */
 `;
 
 const FieldSpan = styled.div`
   min-width: 6em;
   white-space: nowrap;
-  border: 1px solid #aaa;
+  /* border: 1px solid #aaa; */
 `;
 
 interface ExpenseInput {
@@ -575,16 +579,22 @@ export const App: React.FC<{}> = () => {
         <tbody>
           {state.expenses.map(expense => {
             return (
-              <tr key={expense.id}>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='string' col='name' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='money' col='amount' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='percent' col='payPercent' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='money' col='toPay' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='percent' col='paidPercent' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='money' col='due' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='string' col='usuallyDue' /></td>
-                <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='string' col='actuallyDue' /></td>
-              </tr>
+              expense.space
+                ?
+                <tr key={expense.id}>
+                  <td colSpan={8} style={{ height: '20px' }} />
+                </tr>
+                :
+                <tr key={expense.id}>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='string' col='name' /></td>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='money' col='amount' /></td>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='percent' col='payPercent' /></td>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='money' col='toPay' /></td>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='percent' col='paidPercent' /></td>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='money' col='due' /></td>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='string' col='usuallyDue' /></td>
+                  <td><Field expense={expense} state={state} dispatch={dispatch} editable={false} kind='string' col='actuallyDue' /></td>
+                </tr>
             );
           })}
           <FinalRows
