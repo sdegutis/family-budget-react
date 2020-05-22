@@ -9,21 +9,26 @@ const Table = styled.table`
   td {
     border: 1px solid #aaa;
   }
+
+  font-size: 10pt;
 `;
 
 const FieldInput = styled.input`
-  min-width: 6em;
+  /* min-width: 6em; */
   font: inherit;
   outline: none;
+  border: none;
+  padding: 3px;
   /* border: 1px solid #aaa; */
-  /* &:focus {
-    border-color: blue;
-  } */
+  &:focus {
+    background: #17f4;
+  }
 `;
 
 const FieldSpan = styled.div`
   min-width: 6em;
   white-space: nowrap;
+  padding: 3px;
   /* border: 1px solid #aaa; */
 `;
 
