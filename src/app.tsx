@@ -367,14 +367,19 @@ const Field: React.FC<{
 
           const isTab = (e.keyCode === 9)
 
-          dispatch({
-            id: uuid(),
-            type: 'Edit',
-            current: state.editing,
-            oldVal: expense[col],
-            newVal,
-            tab: isTab,
-          });
+          if (expense[col] !== newVal) {
+            dispatch({
+              id: uuid(),
+              type: 'Edit',
+              current: state.editing,
+              oldVal: expense[col],
+              newVal,
+              tab: isTab,
+            });
+          }
+          else {
+            dispatch({ type: 'CancelEdit' });
+          }
         }
       }}
     />;
