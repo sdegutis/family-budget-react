@@ -627,7 +627,7 @@ export const App: React.FC<{}> = () => {
               expense.space
                 ?
                 <tr key={expense.id}
-                  draggable={true}
+                  draggable={state.editing === null}
                   onDragStart={onDragStart}
                   onDragOver={onDragOver}
                   onDragEnd={onDragEnd}
@@ -641,7 +641,7 @@ export const App: React.FC<{}> = () => {
                 </tr>
                 :
                 <tr key={expense.id}
-                  draggable={true}
+                  draggable={state.editing === null}
                   onDragStart={onDragStart}
                   onDragOver={onDragOver}
                   onDragEnd={onDragEnd}
