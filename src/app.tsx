@@ -353,7 +353,10 @@ const Field: React.FC<{
       onBlur={cancelEdit}
       defaultValue={stringValue.toString()}
       onKeyDown={(e) => {
-        if (e.keyCode === 13 || e.keyCode === 9) {
+        if (e.keyCode === 27) {
+          cancelEdit();
+        }
+        else if (e.keyCode === 13 || e.keyCode === 9) {
           e.preventDefault();
           let newVal: any = (e.target as HTMLInputElement).value;
 
