@@ -49,6 +49,14 @@ class BudgetWindow {
     this.browserWindow.show();
   }
 
+  async undo() {
+    this.browserWindow.webContents.send('undo');
+  }
+
+  async redo() {
+    this.browserWindow.webContents.send('redo');
+  }
+
   async open() {
     if (!this.isClean) {
       const result = await dialog.showMessageBox(this.browserWindow, {
@@ -221,35 +229,49 @@ const menu = Menu.buildFromTemplate([
       isMac ? { role: 'close' } : { role: 'quit' },
     ]
   },
-  { role: 'editMenu' },
-  // {
-  //   label: 'Edit',
-  //   submenu: [
-  //     { role: 'undo' },
-  //     { role: 'redo' },
-  //     { type: 'separator' },
-  //     { role: 'cut' },
-  //     { role: 'copy' },
-  //     { role: 'paste' },
-  //     ...(isMac ? [
-  //       { role: 'pasteAndMatchStyle' },
-  //       { role: 'delete' },
-  //       { role: 'selectAll' },
-  //       { type: 'separator' },
-  //       {
-  //         label: 'Speech',
-  //         submenu: [
-  //           { role: 'startspeaking' },
-  //           { role: 'stopspeaking' }
-  //         ]
-  //       }
-  //     ] : [
-  //         { role: 'delete' },
-  //         { type: 'separator' },
-  //         { role: 'selectAll' }
-  //       ])
-  //   ]
-  // },
+  // { role: 'editMenu' },
+  {
+    label: 'Edit',
+    submenu: [
+      {
+        label: 'Undo',
+        click: async (item, window, event) => {
+          budgets[window.id].undo();
+        },
+        accelerator: 'CommandOrControl+Z',
+      },
+      {
+        label: 'Redo',
+        click: async (item, window, event) => {
+          budgets[window.id].redo();
+        },
+        accelerator: 'CommandOrControl+Y',
+      },
+      // { role: 'undo' },
+      // { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      // ...(isMac ? [
+      //   { role: 'pasteAndMatchStyle' },
+      //   { role: 'delete' },
+      //   { role: 'selectAll' },
+      //   { type: 'separator' },
+      //   {
+      //     label: 'Speech',
+      //     submenu: [
+      //       { role: 'startspeaking' },
+      //       { role: 'stopspeaking' }
+      //     ]
+      //   }
+      // ] : [
+      //     { role: 'delete' },
+      //     { type: 'separator' },
+      //     { role: 'selectAll' }
+      //   ])
+    ]
+  },
   { role: 'viewMenu' },
   // {
   //   label: 'View',

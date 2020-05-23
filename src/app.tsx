@@ -529,6 +529,14 @@ export const App: React.FC<{}> = () => {
       });
     });
 
+    ipcRenderer.on('undo', (event, data) => {
+      dispatch({ type: 'Undo' });
+    });
+
+    ipcRenderer.on('redo', (event, data) => {
+      dispatch({ type: 'Redo' });
+    });
+
     ipcRenderer.on('made-new', (event) => {
       dispatch({
         type: 'SetExpenses',
