@@ -509,7 +509,7 @@ export const App: React.FC<{}> = () => {
   }));
 
   React.useEffect(() => {
-    console.log('sending backend data');
+    // console.log('sending backend data');
     ipcRenderer.send('heres-your-data', {
       expenses: state.expenses,
       balances: state.balances,
@@ -518,7 +518,7 @@ export const App: React.FC<{}> = () => {
 
   React.useEffect(() => {
     ipcRenderer.on('opened-data', (event, data) => {
-      console.log('data:', data);
+      // console.log('data:', data);
       dispatch({
         type: 'SetExpenses',
         expenses: data.expenses,
@@ -571,16 +571,16 @@ export const App: React.FC<{}> = () => {
   const undo = () => dispatch({ type: 'Undo' });
   const redo = () => dispatch({ type: 'Redo' });
 
-  console.log('clean', state.cleanActionId);
-  console.log('cursor', state.cursor);
-  console.log('actions.length', state.actions.length);
+  // console.log('clean', state.cleanActionId);
+  // console.log('cursor', state.cursor);
+  // console.log('actions.length', state.actions.length);
 
   const isAtClean = (state.cursor === 0
     ? state.cleanActionId === null
     : state.actions[state.cursor - 1].id === state.cleanActionId);
 
   React.useEffect(() => {
-    console.log('sending backend cleanness');
+    // console.log('sending backend cleanness');
     ipcRenderer.send('whether-clean', isAtClean);
   }, [isAtClean]);
 
@@ -617,7 +617,7 @@ export const App: React.FC<{}> = () => {
               const oldIndex = state.expenses.findIndex(exp => exp.id === dragRow);
               const newIndex = state.expenses.findIndex(exp => exp.id === draggingOnto);
 
-              console.log('dropped', oldIndex, newIndex);
+              // console.log('dropped', oldIndex, newIndex);
               if (oldIndex !== newIndex) {
                 dispatch({ type: 'MoveRow', from: oldIndex, to: newIndex, id: uuid() });
               }
