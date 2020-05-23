@@ -5,6 +5,7 @@ import { ipcRenderer } from 'electron';
 
 const Table = styled.table`
   /* border: 1px solid red; */
+  margin: 1em;
   border-collapse: collapse;
   td {
     border: 1px solid #aaa;
@@ -14,7 +15,7 @@ const Table = styled.table`
 `;
 
 const FieldInput = styled.input`
-  /* min-width: 6em; */
+  min-width: 6em;
   font: inherit;
   outline: none;
   border: none;
@@ -180,6 +181,13 @@ function doAction(state: State, action: MetaAction): State {
           };
         }
         case 'MoveRow': {
+          const newExpenses = [...newState.expenses];
+
+          const [item] = newExpenses.splice(newAction.to, 1);
+          newExpenses.splice(newAction.from, 0, item);
+
+          newState.expenses = newExpenses;
+
           return newState;
         }
         case 'Edit': {
@@ -249,6 +257,13 @@ function doAction(state: State, action: MetaAction): State {
           };
         }
         case 'MoveRow': {
+          const newExpenses = [...newState.expenses];
+
+          const [item] = newExpenses.splice(newAction.from, 1);
+          newExpenses.splice(newAction.to, 0, item);
+
+          newState.expenses = newExpenses;
+
           return newState;
         }
         case 'Edit': {
@@ -538,6 +553,9 @@ export const App: React.FC<{}> = () => {
     });
   }, []);
 
+  const [dragRow, setDragRow] = React.useState<string | null>(null);
+  const [draggingOnto, setDraggingOnto] = React.useState<string | null>(null);
+
   const addRow = () => dispatch({
     id: uuid(),
     type: 'AddRow',
@@ -583,14 +601,56 @@ export const App: React.FC<{}> = () => {
         </thead>
         <tbody>
           {state.expenses.map(expense => {
+            const onDragOver = (e: React.DragEvent<HTMLTableRowElement>) => {
+              e.preventDefault();
+              setDraggingOnto(expense.id);
+            };
+
+            const onDragStart = () => setDragRow(expense.id);
+            const onDragEnd = () => {
+              setDragRow(null);
+              setDraggingOnto(null);
+            };
+            const onDrop = (e: React.DragEvent<HTMLTableRowElement>) => {
+              e.preventDefault();
+
+              const oldIndex = state.expenses.findIndex(exp => exp.id === dragRow);
+              const newIndex = state.expenses.findIndex(exp => exp.id === draggingOnto);
+
+              console.log('dropped', oldIndex, newIndex);
+              if (oldIndex !== newIndex) {
+                dispatch({ type: 'MoveRow', from: oldIndex, to: newIndex, id: uuid() });
+              }
+            };
+
             return (
               expense.space
                 ?
-                <tr key={expense.id}>
+                <tr key={expense.id}
+                  draggable={true}
+                  onDragStart={onDragStart}
+                  onDragOver={onDragOver}
+                  onDragEnd={onDragEnd}
+                  onDrop={onDrop}
+                  style={{
+                    opacity: dragRow === expense.id ? 0.5 : 1,
+                    background: draggingOnto === expense.id ? '#1f83' : 'transparent'
+                  }}
+                >
                   <td colSpan={8} style={{ height: '20px' }} />
                 </tr>
                 :
-                <tr key={expense.id}>
+                <tr key={expense.id}
+                  draggable={true}
+                  onDragStart={onDragStart}
+                  onDragOver={onDragOver}
+                  onDragEnd={onDragEnd}
+                  onDrop={onDrop}
+                  style={{
+                    opacity: dragRow === expense.id ? 0.5 : 1,
+                    background: draggingOnto === expense.id ? '#1f83' : 'transparent'
+                  }}
+                >
                   <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='string' col='name' /></td>
                   <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='money' col='amount' /></td>
                   <td><Field expense={expense} state={state} dispatch={dispatch} editable={true} kind='percent' col='payPercent' /></td>
